@@ -9,6 +9,17 @@ import rateLimiter from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
+// Validate required environment variables
+if (!process.env.MONGO_URI) {
+  console.error("❌ Error: MONGO_URI is not defined in environment variables");
+  process.exit(1);
+}
+
+if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  console.error("❌ Error: Upstash Redis credentials are not defined in environment variables");
+  process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
@@ -21,8 +32,16 @@ if (process.env.NODE_ENV !== "production") {
     })
   );
 }
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(rateLimiter);
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
 
 app.use("/api/notes", notesRoutes);
 

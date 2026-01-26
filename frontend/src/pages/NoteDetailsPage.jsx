@@ -46,7 +46,8 @@ const NoteDetailsPage = () => {
       navigate("/");
     } catch (error) {
       console.log("Error deleting the note:", error);
-      toast.error("Failed to delete note");
+      const message = error.response?.data?.message || "Failed to delete note";
+      toast.error(message);
     } finally {
       setDeleting(false);
       setShowDeleteScreen(false);
@@ -67,7 +68,8 @@ const NoteDetailsPage = () => {
       navigate("/");
     } catch (error) {
       console.log("Error saving the note:", error);
-      toast.error("Failed to update note");
+      const message = error.response?.data?.message || "Failed to update note";
+      toast.error(message);
     } finally {
       setSaving(false);
     }
