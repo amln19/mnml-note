@@ -1,82 +1,158 @@
 # MnmlNote
 
-A minimal MERN stack note-taking app. Notes are stored in MongoDB, served through an Express API, and rendered with React. Rate limiting is applied per IP via Upstash Redis to prevent abuse.
+A minimal, distraction-free note-taking web app built with the MERN stack. Create, read, update, and delete notes through a clean interface with dark/light theme support and server-side rate limiting.
 
 ## Features
 
-- Create, read, update, and delete notes
-- Dark mode toggle
-- Rate limiting on API routes (Upstash Redis)
-- Responsive layout with TailwindCSS and DaisyUI
+- 📝 **Create, edit, and delete notes** — full CRUD with real-time feedback via toast notifications
+- 🌗 **Dark / Light theme** — toggle between custom-designed themes with system preference detection
+- 🚦 **Rate limiting** — per-IP sliding window rate limiting powered by Upstash Redis
+- 📱 **Responsive design** — mobile-first layout with a grid that adapts across breakpoints
+- ⚡ **Production-ready** — serves the React frontend as static files from Express in production
+- 🔒 **Security headers** — X-Content-Type-Options, X-Frame-Options, and XSS protection out of the box
+- 🗑️ **Delete confirmation** — modal overlay prevents accidental note deletion
 
 ## Tech Stack
 
-**Frontend:** React 19 · React Router · TailwindCSS · DaisyUI · Vite  
-**Backend:** Node.js · Express 5 · MongoDB · Mongoose  
-**Services:** Upstash Redis
-
-## Prerequisites
-
-- Node.js v18+
-- A [MongoDB](https://www.mongodb.com/atlas) database (Atlas free tier works)
-- An [Upstash](https://upstash.com) Redis database (free tier works)
+- **Frontend** — React 19, React Router 7, Tailwind CSS 4, DaisyUI 5, Axios, Lucide React icons, React Hot Toast
+- **Backend** — Node.js, Express 5, Mongoose (MongoDB ODM)
+- **Database** — MongoDB Atlas
+- **Rate Limiting** — Upstash Redis with `@upstash/ratelimit` (sliding window, 100 req / 60 s)
+- **Build Tool** — Vite 7
+- **Dev Tooling** — Nodemon, ESLint
 
 ## Getting Started
 
-**1. Clone the repo**
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v18 or higher
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) cluster (or local MongoDB instance)
+- An [Upstash Redis](https://upstash.com/) database (free tier works)
+
+### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/amln19/mnml-note.git
 cd mnml-note
+
+# Install all dependencies (backend + frontend)
+npm run build
 ```
 
-**2. Configure environment variables**
+### Environment Variables
 
-Create a `.env` file in the `backend/` directory:
+Create a `.env` file inside the `backend/` directory. You can copy the example:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Then fill in your values:
 
 ```env
-MONGO_URI=<your_mongodb_connection_string>
-UPSTASH_REDIS_REST_URL=<your_upstash_redis_url>
-UPSTASH_REDIS_REST_TOKEN=<your_upstash_redis_token>
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/mnml-note
+UPSTASH_REDIS_REST_URL=https://your-redis-url.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_redis_token_here
 NODE_ENV=development
+PORT=5001
 ```
 
-**3. Install dependencies and start**
+| Variable | Description | Required |
+|---|---|---|
+| `MONGO_URI` | MongoDB connection string | Yes |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint | Yes |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis auth token | Yes |
+| `NODE_ENV` | `development` or `production` | No (defaults to `development`) |
+| `PORT` | Port for the Express server | No (defaults to `5001`) |
 
-From the project root, this installs and starts both servers concurrently:
+### Running the App
+
+**Development** — starts both backend (Nodemon) and frontend (Vite) concurrently:
 
 ```bash
 npm run dev
 ```
 
-The frontend runs on `http://localhost:5173` and the backend on `http://localhost:5001`.
+The frontend runs at `http://localhost:5173` and proxies API calls to the backend at `http://localhost:5001`.
 
-To run them separately:
-
-```bash
-# Backend
-cd backend && npm install && npm run dev
-
-# Frontend (in a separate terminal)
-cd frontend && npm install && npm run dev
-```
-
-**4. Production build**
+**Production** — build the frontend and serve everything from Express:
 
 ```bash
 npm run build
 npm start
 ```
 
-`npm run build` installs dependencies and compiles the frontend. `npm start` launches the backend, which serves the built static files. Set `NODE_ENV=production` in your environment.
+The app is then available at `http://localhost:5001`.
 
-## Troubleshooting
+## Project Structure
 
-- **Cannot connect to MongoDB** — verify `MONGO_URI` and ensure your current IP is whitelisted in Atlas under Network Access.
-- **Rate limiter errors on startup** — the server will log the error and continue, but check that `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set correctly.
-- **Port already in use** — ports 5001 (backend) and 5173 (frontend) must be free. Change them in `backend/src/server.js` and `frontend/vite.config.js` if needed.
-- **`npm run dev` only starts one server** — the root script uses `&` for concurrency, which works on Unix/macOS. On Windows, run backend and frontend in separate terminals.
+```
+mnml-note/
+├── package.json                  # Root scripts: dev, build, start
+├── backend/
+│   ├── package.json              # Backend dependencies & scripts
+│   ├── .env.example              # Environment variable template
+│   └── src/
+│       ├── server.js             # Express entry point, middleware, static serving
+│       ├── config/
+│       │   ├── db.js             # MongoDB connection via Mongoose
+│       │   └── upstash.js        # Upstash Redis rate limiter config
+│       ├── controllers/
+│       │   └── notesController.js  # CRUD handlers for notes
+│       ├── middleware/
+│       │   └── rateLimiter.js    # Per-IP rate limiting middleware
+│       ├── models/
+│       │   └── Note.js           # Mongoose schema (title, content, timestamps)
+│       └── routes/
+│           └── notesRoutes.js    # /api/notes route definitions
+└── frontend/
+    ├── package.json              # Frontend dependencies & scripts
+    ├── index.html                # HTML entry point
+    ├── vite.config.js            # Vite + React + Tailwind plugin config
+    ├── eslint.config.js          # ESLint flat config
+    └── src/
+        ├── main.jsx              # React root — BrowserRouter, Toaster
+        ├── App.jsx               # Route definitions (/, /create, /note/:id)
+        ├── style.css             # Tailwind imports, DaisyUI custom themes
+        ├── components/
+        │   ├── NavBar.jsx        # Top bar with logo, new note button, theme toggle
+        │   ├── NoteCard.jsx      # Note preview card with edit/delete actions
+        │   ├── ConfirmDeleteScreen.jsx  # Delete confirmation modal
+        │   ├── NotesNotFound.jsx # Empty state placeholder
+        │   ├── RateLimitedUI.jsx # Rate limit warning banner
+        │   └── ThemeToggle.jsx   # Dark/light mode toggle with localStorage
+        ├── lib/
+        │   ├── axios.js          # Axios instance with dynamic base URL
+        │   └── utils.js          # Date formatting helper
+        └── pages/
+            ├── HomePage.jsx      # Notes grid with fetch, loading, and error states
+            ├── CreateNotePage.jsx    # New note form
+            └── NoteDetailsPage.jsx   # Edit/delete existing note
+```
+
+## API Endpoints
+
+All routes are prefixed with `/api/notes` and protected by the rate limiter.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/notes` | Retrieve all notes (newest first) |
+| `GET` | `/api/notes/:id` | Retrieve a single note by ID |
+| `POST` | `/api/notes` | Create a new note |
+| `PUT` | `/api/notes/:id` | Update an existing note |
+| `DELETE` | `/api/notes/:id` | Delete a note |
+
+## Deployment
+
+The project is set up for single-server deployment:
+
+1. Set `NODE_ENV=production` in your environment.
+2. Run `npm run build` to install dependencies and build the frontend.
+3. Run `npm start` to launch Express, which serves the API and the React SPA from `frontend/dist`.
+
+Works out of the box on platforms like [Render](https://render.com), [Railway](https://railway.app), or any Node.js host — just set your environment variables and configure the build/start commands.
 
 ## License
 
-ISC
+This project is licensed under the [MIT License](LICENSE).
