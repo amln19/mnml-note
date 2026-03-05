@@ -85,52 +85,6 @@ npm start
 
 The app is then available at `http://localhost:5001`.
 
-## Project Structure
-
-```
-mnml-note/
-├── package.json                  # Root scripts: dev, build, start
-├── backend/
-│   ├── package.json              # Backend dependencies & scripts
-│   ├── .env.example              # Environment variable template
-│   └── src/
-│       ├── server.js             # Express entry point, middleware, static serving
-│       ├── config/
-│       │   ├── db.js             # MongoDB connection via Mongoose
-│       │   └── upstash.js        # Upstash Redis rate limiter config
-│       ├── controllers/
-│       │   └── notesController.js  # CRUD handlers for notes
-│       ├── middleware/
-│       │   └── rateLimiter.js    # Per-IP rate limiting middleware
-│       ├── models/
-│       │   └── Note.js           # Mongoose schema (title, content, timestamps)
-│       └── routes/
-│           └── notesRoutes.js    # /api/notes route definitions
-└── frontend/
-    ├── package.json              # Frontend dependencies & scripts
-    ├── index.html                # HTML entry point
-    ├── vite.config.js            # Vite + React + Tailwind plugin config
-    ├── eslint.config.js          # ESLint flat config
-    └── src/
-        ├── main.jsx              # React root — BrowserRouter, Toaster
-        ├── App.jsx               # Route definitions (/, /create, /note/:id)
-        ├── style.css             # Tailwind imports, DaisyUI custom themes
-        ├── components/
-        │   ├── NavBar.jsx        # Top bar with logo, new note button, theme toggle
-        │   ├── NoteCard.jsx      # Note preview card with edit/delete actions
-        │   ├── ConfirmDeleteScreen.jsx  # Delete confirmation modal
-        │   ├── NotesNotFound.jsx # Empty state placeholder
-        │   ├── RateLimitedUI.jsx # Rate limit warning banner
-        │   └── ThemeToggle.jsx   # Dark/light mode toggle with localStorage
-        ├── lib/
-        │   ├── axios.js          # Axios instance with dynamic base URL
-        │   └── utils.js          # Date formatting helper
-        └── pages/
-            ├── HomePage.jsx      # Notes grid with fetch, loading, and error states
-            ├── CreateNotePage.jsx    # New note form
-            └── NoteDetailsPage.jsx   # Edit/delete existing note
-```
-
 ## API Endpoints
 
 All routes are prefixed with `/api/notes` and protected by the rate limiter.
@@ -155,4 +109,4 @@ Works out of the box on platforms like [Render](https://render.com), [Railway](h
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT
